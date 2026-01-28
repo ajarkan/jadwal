@@ -57,10 +57,7 @@
                 <i class="fas fa-book-open mr-1"></i> Fiqih
             </button>
             <button onclick="switchCategory('Tajwid')" id="cat-Tajwid" class="cat-btn tab-inactive px-4 py-2 rounded-full border text-sm font-semibold whitespace-nowrap transition shadow-sm">
-                <i class="fas fa-book mr-1"></i> Tajwid
-            </button>
-			<button onclick="switchCategory('Tafsir')" id="cat-Tafsir" class="cat-btn tab-inactive px-4 py-2 rounded-full border text-sm font-semibold whitespace-nowrap transition shadow-sm">
-                <i class="fas fa-school mr-1"></i> Tafsir
+                <i class="fas fa-music mr-1"></i> Tajwid
             </button>
         </div>
 
@@ -68,10 +65,10 @@
         <div class="flex justify-between items-center mb-6 gap-4 bg-white p-2 rounded-xl shadow-sm border border-gray-100">
             <div class="flex gap-2 w-full">
                 <button onclick="switchGender('ikhwan')" id="btn-ikhwan" class="flex-1 px-4 py-2 rounded-lg font-bold text-sm transition-all bg-emerald-600 text-white shadow">
-                    <i class="fas fa-male mr-2"></i>IKHWAN
+                    IKHWAN (Laki-laki)
                 </button>
                 <button onclick="switchGender('akhwat')" id="btn-akhwat" class="flex-1 px-4 py-2 rounded-lg font-bold text-sm transition-all text-gray-500 hover:bg-gray-50">
-                    <i class="fas fa-female mr-2"></i>AKHWAT
+                    AKHWAT (Perempuan)
                 </button>
             </div>
         </div>
@@ -100,8 +97,8 @@
 
     <!-- MODAL FORM REGISTRASI -->
     <div id="modal-reg" class="fixed inset-0 bg-emerald-900/60 z-50 hidden flex items-end md:items-center justify-center p-0 md:p-4 backdrop-blur-sm" onclick="closeModal('modal-reg')">
-        <!-- PERBAIKAN: max-h-[85vh] diubah menjadi max-h-[90vh] agar pop-up lebih tinggi (jarak tipis) -->
-        <div class="bg-white rounded-t-2xl md:rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh] md:max-h-[90vh] relative" onclick="event.stopPropagation()">
+        <!-- PERBAIKAN: Menggunakan h-[96vh] (Fixed Height) agar memaksa modal naik ke atas (jarak tipis) di mobile -->
+        <div class="bg-white rounded-t-2xl md:rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col h-[96vh] md:h-auto md:max-h-[90vh] relative" onclick="event.stopPropagation()">
             
             <!-- Header -->
             <div id="reg-header" class="bg-emerald-600 p-4 text-white flex justify-between items-center shrink-0">
@@ -200,7 +197,7 @@
 
     <script>
         // === KONFIGURASI ===
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz3Urh7RszE6LGDEFKJm7gS3kShJw_Ir6xruJNUos9uUlUPphHz2qnME4dxOcPfvmjw/exec"; 
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz9LXu4TEScvpuvdq33emXQijSsAEYmRJ9iT9sqzn6iYsnWruoTMJxYQaccadJxhz0-/exec"; 
         const MAX_CAPACITY = 10; 
         const STORAGE_KEY_PREFIX = "tahsin_app_";
 
@@ -216,7 +213,6 @@
         const DISABLED_CATEGORIES = {
             "Bahasa Arab": "Mohon maaf, pendaftaran kelas Bahasa Arab belum dibuka untuk saat ini.",
             "Fiqih": "Mohon maaf, kelas Fiqih sedang dalam persiapan kurikulum baru.",
-			"Tafsir": "Mohon maaf, Kelas tafsir juz 30 belum dibuka.",
             "Tajwid": "Kelas Tajwid akan dibuka bulan depan. Stay tuned!"
         };
 
@@ -232,18 +228,12 @@
             { category: "Tahsin", days: "Senin & Rabu", type: "Offline", times: ["06.30 – 08.00", "16.00 – 17.30"] },
             { category: "Tahsin", days: "Selasa & Kamis", type: "Online", times: ["06.30 – 08.00", "19.30 – 20.30"] },
             { category: "Tahsin", days: "Selasa & Kamis", type: "Offline", times: ["06.30 – 08.00", "16.00 – 17.30"] },
-			{ category: "Tahsin", days: "Sabtu & Ahad", type: "Online", times: ["06.30 – 08.00", "08.00 – 09.30", "16.00 – 17.30"] },
-			{ category: "Tahsin", days: "Sabtu & Ahad", type: "Offline", times: ["06.30 – 08.00", "08.00 – 09.30", "16.00 – 17.30"] },
             { category: "Bahasa Arab", days: "Selasa", type: "Offline", times: ["08.00 – 09.30", "13.00 – 14.30"] },
             { category: "Bahasa Arab", days: "Kamis", type: "Online", times: ["19.30 – 21.00"] },
-			{ category: "Bahasa Arab", days: "Sabtu", type: "Offline", times: ["09.30 – 11.00"] },
             { category: "Fiqih", days: "Sabtu", type: "Offline", times: ["09.00 – 11.00"] },
             { category: "Fiqih", days: "Ahad", type: "Offline", times: ["13.00 – 14.30"] },
             { category: "Tajwid", days: "Jumat", type: "Online", times: ["16.00 – 17.30"] },
-            { category: "Tajwid", days: "Ahad", type: "Offline", times: ["08.00 – 09.30"] },
-			{ category: "Tafsir", days: "Sabtu", type: "Online", times: ["08.00 – 09.30"] },
-			{ category: "Tafsir", days: "Ahad", type: "Online", times: ["08.00 – 09.30", "09.30 – 11.00", "13.00 – 14.30"] },
-			{ category: "Tafsir", days: "Ahad", type: "Offline", times: ["08.00 – 09.30"] }
+            { category: "Tajwid", days: "Ahad", type: "Offline", times: ["08.00 – 09.30"] }
         ];
 
         // State
