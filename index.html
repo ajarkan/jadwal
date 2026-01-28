@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pusat Pendaftaran Kelas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+        body { font-family: 'Poppins', sans-serif; }
+        .scroller::-webkit-scrollbar { width: 4px; }
+        .scroller::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
+        .accordion-content { transition: all 0.3s ease-in-out; max-height: 0; opacity: 0; overflow: hidden; }
+        .accordion-content.open { max-height: 2000px; opacity: 1; overflow: visible; }
+        .rotate-icon { transition: transform 0.3s; }
+        .rotate-icon.open { transform: rotate(180deg); }
+        .tooltip-text { visibility: hidden; opacity: 0; transition: opacity 0.2s; z-index: 50; }
+        .group:hover .tooltip-text { visibility: visible; opacity: 1; }
+        
+        /* Animasi Tab */
+        .tab-active { background-color: #059669; color: white; border-color: #059669; }
+        .tab-inactive { background-color: white; color: #4b5563; border-color: #e5e7eb; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 min-h-screen relative pb-20">
+
+    <!-- Notification Banner -->
+    <div id="error-banner" class="hidden bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-4xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-2"><i class="fas fa-exclamation-triangle"></i><span class="text-sm">Mode Simulasi (Data Dummy).</span></div>
+            <button onclick="document.getElementById('error-banner').classList.add('hidden')"><i class="fas fa-times"></i></button>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="bg-emerald-700 text-white p-6 shadow-lg sticky top-0 z-40">
+        <div class="max-w-4xl mx-auto">
+            <h1 class="text-xl md:text-2xl font-bold flex items-center gap-2">
+                <i class="fas fa-mosque"></i> Pusat Pendaftaran Kelas
+            </h1>
+            <p class="text-emerald-100 text-xs md:text-sm mt-1">Silahkan pilih kategori kelas, lalu pilih jadwal.</p>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto p-4 md:p-6">
+        
+        <!-- 1. KATEGORI KELAS (Tab Atas) -->
+        <div class="flex overflow-x-auto pb-4 gap-2 mb-2 scroller">
+            <button onclick="switchCategory('Tahsin')" id="cat-Tahsin" class="cat-btn tab-active px-4 py-2 rounded-full border text-sm font-semibold whitespace-nowrap transition shadow-sm">
+                <i class="fas fa-quran mr-1"></i> Tahsin Al-Quran
+            </button>
+            <button onclick="switchCategory('Bahasa Arab')" id="cat-Bahasa Arab" class="cat-btn tab-inactive px-4 py-2 rounded-full border text-sm font-semibold whitespace-nowrap transition shadow-sm">
+                <i class="fas fa-language mr-1"></i> Bahasa Arab
+            </button>
+            <button onclick="switchCategory('Fiqih')" id="cat-Fiqih" class="cat-btn tab-inactive px-4 py-2 rounded-full border text-sm font-semibold whitespace-nowrap transition shadow-sm">
+                <i class="fas fa-book-open mr-1"></i> Fiqih
+            </button>
+            <button onclick="switchCategory('Tajwid')" id="cat-Tajwid" class="cat-btn tab-inactive px-4 py-2 rounded-full border text-sm font-semibold whitespace-nowrap transition shadow-sm">
+                <i class="fas fa-book mr-1"></i> Tajwid
+            </button>
+			<button onclick="switchCategory('Tafsir')" id="cat-Tafsir" class="cat-btn tab-inactive px-4 py-2 rounded-full border text-sm font-semibold whitespace-nowrap transition shadow-sm">
+                <i class="fas fa-school mr-1"></i> Tafsir
+            </button>
+        </div>
+
+        <!-- 2. PILIHAN GENDER (Tab Bawah) -->
+        <div class="flex justify-between items-center mb-6 gap-4 bg-white p-2 rounded-xl shadow-sm border border-gray-100">
+            <div class="flex gap-2 w-full">
+                <button onclick="switchGender('ikhwan')" id="btn-ikhwan" class="flex-1 px-4 py-2 rounded-lg font-bold text-sm transition-all bg-emerald-600 text-white shadow">
+                    <i class="fas fa-male mr-2"></i>IKHWAN
+                </button>
+                <button onclick="switchGender('akhwat')" id="btn-akhwat" class="flex-1 px-4 py-2 rounded-lg font-bold text-sm transition-all text-gray-500 hover:bg-gray-50">
+                    <i class="fas fa-female mr-2"></i>AKHWAT
+                </button>
+            </div>
+        </div>
+
+        <!-- Legend -->
+        <div class="flex justify-end gap-3 text-[10px] text-gray-500 mb-4 px-2">
+            <div class="flex items-center gap-1"><span class="w-2 h-2 bg-emerald-500 rounded-full"></span> Tersedia</div>
+            <div class="flex items-center gap-1"><span class="w-2 h-2 bg-yellow-500 rounded-full"></span> Hampir Penuh</div>
+            <div class="flex items-center gap-1"><span class="w-2 h-2 bg-red-500 rounded-full"></span> Penuh</div>
+        </div>
+
+        <!-- Loading -->
+        <div id="loading" class="text-center py-12 flex flex-col items-center justify-center">
+            <i class="fas fa-circle-notch fa-spin text-4xl text-emerald-600 mb-4"></i>
+            <p class="text-sm text-gray-500">Memuat Jadwal...</p>
+            <div class="w-48 h-1.5 bg-gray-200 rounded-full mt-4 overflow-hidden">
+                <div id="loading-bar" class="h-full bg-emerald-500 transition-all duration-300" style="width: 0%"></div>
+            </div>
+            <p id="loading-percentage" class="text-[10px] text-gray-400 mt-2 font-mono">0%</p>
+        </div>
+
+        <!-- Container Jadwal -->
+        <div id="schedule-container" class="space-y-4 hidden"></div>
+
+    </main>
+
+    <!-- MODAL FORM REGISTRASI -->
+    <div id="modal-reg" class="fixed inset-0 bg-emerald-900/60 z-50 hidden flex items-end md:items-center justify-center p-0 md:p-4 backdrop-blur-sm" onclick="closeModal('modal-reg')">
+        <!-- PERBAIKAN: max-h-[85vh] diubah menjadi max-h-[96vh] agar pop-up lebih tinggi (jarak tipis) -->
+        <div class="bg-white rounded-t-2xl md:rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[96vh] md:max-h-[90vh] relative" onclick="event.stopPropagation()">
+            
+            <!-- Header -->
+            <div id="reg-header" class="bg-emerald-600 p-4 text-white flex justify-between items-center shrink-0">
+                <div>
+                    <h3 class="font-bold text-lg"><i class="fas fa-edit mr-2"></i>Formulir Pendaftaran</h3>
+                    <p class="text-xs text-emerald-100">Isi data dengan benar.</p>
+                </div>
+                <button onclick="closeModal('modal-reg')" class="hover:bg-emerald-700 w-8 h-8 rounded-full flex items-center justify-center"><i class="fas fa-times"></i></button>
+            </div>
+
+            <div class="p-5 overflow-y-auto scroller flex-1 relative">
+                <!-- FORM -->
+                <form id="registration-form" class="space-y-4" onsubmit="handleFormSubmit(event)">
+                    
+                    <div class="bg-emerald-50 border border-emerald-100 p-3 rounded-lg text-xs space-y-1">
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">KELAS:</span>
+                            <span class="font-bold text-emerald-700" id="display-category"></span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">JADWAL:</span>
+                            <span class="font-bold text-emerald-700" id="display-schedule"></span>
+                        </div>
+                        <input type="hidden" id="reg-category" name="category">
+                        <input type="hidden" id="reg-schedule" name="schedule">
+                    </div>
+
+                    <div><label class="block text-xs font-bold text-gray-500 mb-1">NAMA LENGKAP</label>
+                    <input type="text" name="fullname" required class="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none"></div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div><label class="block text-xs font-bold text-gray-500 mb-1">PANGGILAN</label>
+                        <input type="text" name="nickname" required class="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none"></div>
+                        <div><label class="block text-xs font-bold text-gray-500 mb-1">GENDER</label>
+                        <select name="gender" required class="w-full border rounded-lg px-3 py-2.5 text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none">
+                            <option value="">- Pilih -</option><option value="Laki-laki">Laki-laki</option><option value="Perempuan">Perempuan</option>
+                        </select></div>
+                    </div>
+
+                    <div><label class="block text-xs font-bold text-gray-500 mb-1">WHATSAPP</label>
+                    <div class="relative"><span class="absolute left-3 top-2.5 text-gray-400 text-sm"><i class="fab fa-whatsapp"></i></span>
+                    <input type="tel" name="wa" required class="w-full border rounded-lg pl-9 pr-3 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="08xxxxxxxxxx"></div></div>
+
+                    <div><label class="block text-xs font-bold text-gray-500 mb-1">ALAMAT</label>
+                    <textarea name="address" required rows="2" class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none"></textarea></div>
+
+                    <div><label class="block text-xs font-bold text-gray-500 mb-1">KEMAMPUAN BACA</label>
+                    <select name="ability" required class="w-full border rounded-lg px-3 py-2.5 text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none">
+                        <option value="">- Pilih -</option><option value="Belum bisa">Belum bisa (Nol)</option><option value="Iqro">Iqro</option><option value="Al-Quran">Al-Quran</option>
+                    </select></div>
+
+                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-lg shadow-md mt-4 transition transform active:scale-95 flex justify-center items-center gap-2">
+                        <span>Kirim Pendaftaran</span> <i class="fas fa-paper-plane"></i>
+                    </button>
+                </form>
+
+                <!-- SUCCESS SCREEN (WhatsApp Link) -->
+                <div id="success-view" class="hidden bg-white z-50 flex flex-col items-center justify-center text-center p-8 w-full min-h-[400px]">
+                    <div class="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mb-6 animate-bounce"><i class="fas fa-check text-4xl text-emerald-600"></i></div>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">Alhamdulillah!</h2>
+                    <p class="text-sm text-gray-500 mb-8 max-w-xs mx-auto">Data Anda telah tersimpan. Silahkan gabung grup WhatsApp untuk informasi selanjutnya.</p>
+                    
+                    <a href="https://chat.whatsapp.com/Fe3xs82rs6r2b7fZyJVm4G" target="_blank" class="w-full max-w-xs bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 flex items-center justify-center gap-3 mb-6">
+                        <i class="fab fa-whatsapp text-2xl"></i>
+                        <span>Gabung Grup WhatsApp</span>
+                    </a>
+                    
+                    <button onclick="closeModal('modal-reg')" class="text-sm text-gray-400 hover:text-gray-600 underline">Tutup Jendela Ini</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DETAIL PESERTA -->
+    <div id="modal-detail" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm" onclick="closeModal('modal-detail')">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all scale-100" onclick="event.stopPropagation()">
+            
+            <!-- Header Detail -->
+            <div class="bg-gray-800 p-4 text-white flex justify-between items-start">
+                <div>
+                    <h3 class="font-bold text-lg"><i class="fas fa-users mr-2"></i>Daftar Peserta</h3>
+                    <p id="detail-subtitle" class="text-xs text-gray-300 mt-1 italic">Senin & Rabu...</p>
+                </div>
+                <button onclick="closeModal('modal-detail')" class="hover:bg-gray-700 w-8 h-8 rounded-full flex items-center justify-center transition"><i class="fas fa-times"></i></button>
+            </div>
+
+            <!-- Baris Jumlah Peserta -->
+            <div class="p-3 bg-gray-50 border-b flex justify-between items-center text-xs font-bold text-gray-600 tracking-wide">
+                <span>JUMLAH PESERTA TERDAFTAR</span>
+                <span id="detail-count" class="bg-gray-200 text-gray-800 px-3 py-1 rounded-full text-xs">0</span>
+            </div>
+
+            <ul id="participant-list" class="max-h-[50vh] overflow-y-auto scroller p-2 space-y-1"></ul>
+        </div>
+    </div>
+
+    <script>
+        // === KONFIGURASI ===
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz3Urh7RszE6LGDEFKJm7gS3kShJw_Ir6xruJNUos9uUlUPphHz2qnME4dxOcPfvmjw/exec"; 
+        const MAX_CAPACITY = 10; 
+        const STORAGE_KEY_PREFIX = "tahsin_app_";
+
+        // === KONFIGURASI KAPASITAS PER KELAS ===
+        const CATEGORY_CAPACITY = {
+            "Tahsin": 10,
+            "Bahasa Arab": 25,
+            "Fiqih": 25,
+            "Tajwid": 15
+        };
+
+        // === FITUR DISABLE KATEGORI KELAS (Tab dikunci) ===
+        const DISABLED_CATEGORIES = {
+            "Bahasa Arab": "Mohon maaf, pendaftaran kelas Bahasa Arab belum dibuka untuk saat ini.",
+            "Fiqih": "Mohon maaf, kelas Fiqih sedang dalam persiapan kurikulum baru.",
+			"Tafsir": "Mohon maaf, Kelas tafsir juz 30 belum dibuka.",
+            "Tajwid": "Kelas Tajwid akan dibuka bulan depan. Stay tuned!"
+        };
+
+        // === FITUR DISABLE JADWAL SPESIFIK ===
+        const DISABLED_SCHEDULES = {
+            "Bahasa Arab | Ikhwan | Selasa | Offline | 08.00 – 09.30": "Ustadz sedang berhalangan hadir bulan ini.",
+            "Fiqih | Akhwat | Ahad | Offline | 13.00 – 14.30": "Kuota dikunci sementara untuk evaluasi."
+        };
+
+        // === DATA MASTER JADWAL ===
+        const MASTER_DATA = [
+            { category: "Tahsin", days: "Senin & Rabu", type: "Online", times: ["06.30 – 08.00", "16.00 – 17.30", "19.30 – 20.30"] },
+            { category: "Tahsin", days: "Senin & Rabu", type: "Offline", times: ["06.30 – 08.00", "16.00 – 17.30"] },
+            { category: "Tahsin", days: "Selasa & Kamis", type: "Online", times: ["06.30 – 08.00", "19.30 – 20.30"] },
+            { category: "Tahsin", days: "Selasa & Kamis", type: "Offline", times: ["06.30 – 08.00", "16.00 – 17.30"] },
+			{ category: "Tahsin", days: "Sabtu & Ahad", type: "Online", times: ["06.30 – 08.00", "08.00 – 09.30", "16.00 – 17.30"] },
+			{ category: "Tahsin", days: "Sabtu & Ahad", type: "Offline", times: ["06.30 – 08.00", "08.00 – 09.30", "16.00 – 17.30"] },
+            { category: "Bahasa Arab", days: "Selasa", type: "Offline", times: ["08.00 – 09.30", "13.00 – 14.30"] },
+            { category: "Bahasa Arab", days: "Kamis", type: "Online", times: ["19.30 – 21.00"] },
+			{ category: "Bahasa Arab", days: "Sabtu", type: "Offline", times: ["09.30 – 11.00"] },
+            { category: "Fiqih", days: "Sabtu", type: "Offline", times: ["09.00 – 11.00"] },
+            { category: "Fiqih", days: "Ahad", type: "Offline", times: ["13.00 – 14.30"] },
+            { category: "Tajwid", days: "Jumat", type: "Online", times: ["16.00 – 17.30"] },
+            { category: "Tajwid", days: "Ahad", type: "Offline", times: ["08.00 – 09.30"] },
+			{ category: "Tafsir", days: "Sabtu", type: "Online", times: ["08.00 – 09.30"] },
+			{ category: "Tafsir", days: "Ahad", type: "Online", times: ["08.00 – 09.30", "09.30 – 11.00", "13.00 – 14.30"] },
+			{ category: "Tafsir", days: "Ahad", type: "Offline", times: ["08.00 – 09.30"] }
+        ];
+
+        // State
+        let allParticipants = [];
+        let currentCat = 'Tahsin';
+        let currentGen = 'ikhwan';
+
+        // === INIT ===
+        async function init() {
+            startLoading();
+            initAutoSave();
+            
+            if (!SCRIPT_URL) {
+                showErrorBanner();
+                allParticipants = generateDummyData();
+                finishLoading();
+                return;
+            }
+
+            try {
+                const res = await fetch(`${SCRIPT_URL}?v=${Date.now()}`);
+                if (!res.ok) throw new Error("Network");
+                const data = await res.json();
+                
+                allParticipants = data.map(p => {
+                    let ft = p.timestamp;
+                    if (typeof ft === 'string') {
+                        const parts = ft.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+                        if (parts) {
+                            const d = new Date(parts[3], parts[2]-1, parts[1]);
+                            if(!isNaN(d)) ft = d.toLocaleDateString('id-ID', {day:'numeric', month:'short', year:'numeric'});
+                        }
+                    }
+                    return { ...p, timestamp: ft };
+                });
+            } catch (e) {
+                showErrorBanner();
+                allParticipants = generateDummyData();
+            }
+            finishLoading();
+        }
+
+        // === LOGIC TAMPILAN ===
+        function switchCategory(cat) {
+            currentCat = cat;
+            document.querySelectorAll('.cat-btn').forEach(b => {
+                b.classList.remove('tab-active');
+                b.classList.add('tab-inactive');
+            });
+            const activeBtn = document.getElementById(`cat-${cat}`);
+            activeBtn.classList.remove('tab-inactive');
+            activeBtn.classList.add('tab-active');
+            renderSchedules();
+        }
+
+        function switchGender(gen) {
+            currentGen = gen;
+            const btnI = document.getElementById('btn-ikhwan');
+            const btnA = document.getElementById('btn-akhwat');
+            
+            if (gen === 'ikhwan') {
+                btnI.className = "flex-1 px-4 py-2 rounded-lg font-bold text-sm transition-all bg-emerald-600 text-white shadow";
+                btnA.className = "flex-1 px-4 py-2 rounded-lg font-bold text-sm transition-all text-gray-500 hover:bg-gray-50";
+            } else {
+                btnA.className = "flex-1 px-4 py-2 rounded-lg font-bold text-sm transition-all bg-pink-600 text-white shadow";
+                btnI.className = "flex-1 px-4 py-2 rounded-lg font-bold text-sm transition-all text-gray-500 hover:bg-gray-50";
+            }
+            renderSchedules();
+        }
+
+        function renderSchedules() {
+            const container = document.getElementById('schedule-container');
+            container.innerHTML = '';
+
+            // CEK APAKAH KATEGORI INI DI-DISABLE?
+            if (DISABLED_CATEGORIES[currentCat]) {
+                const msg = DISABLED_CATEGORIES[currentCat];
+                container.innerHTML = `
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-10 text-center flex flex-col items-center">
+                        <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4 text-gray-400">
+                            <i class="fas fa-lock text-4xl"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-700 mb-2">Kelas Belum Dibuka</h3>
+                        <p class="text-sm text-gray-500 max-w-sm mx-auto">${msg}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const theme = currentGen === 'ikhwan' ? 'emerald' : 'pink';
+            
+            const filteredSchedules = MASTER_DATA.filter(d => d.category === currentCat);
+            const validParticipants = allParticipants.filter(p => 
+                p.category === currentCat && 
+                p.gender && p.gender.toLowerCase() === (currentGen === 'ikhwan' ? 'laki-laki' : 'perempuan')
+            );
+
+            if (filteredSchedules.length === 0) {
+                container.innerHTML = `<div class="text-center text-gray-400 py-10 italic">Tidak ada jadwal untuk kategori ini.</div>`;
+                return;
+            }
+
+            filteredSchedules.forEach((group, idx) => {
+                const contentId = `c-${idx}`;
+                let total = 0;
+                group.times.forEach(t => {
+                    const schedStr = `${group.days} | ${group.type} | ${t}`;
+                    total += validParticipants.filter(p => p.schedule === schedStr).length;
+                });
+
+                const div = document.createElement('div');
+                div.className = "bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden";
+                
+                div.innerHTML = `
+                    <div onclick="toggleAcc('${contentId}')" class="bg-${theme}-50 px-5 py-3 border-b border-${theme}-100 flex items-center justify-between cursor-pointer hover:bg-${theme}-100 transition">
+                        <div class="flex items-center gap-3">
+                            <div class="bg-${theme}-100 p-2 rounded-full text-${theme}-600"><i class="fas ${group.type==='Online'?'fa-wifi':'fa-building'}"></i></div>
+                            <div>
+                                <h2 class="font-bold text-${theme}-900 text-sm">${group.days} — ${group.type}</h2>
+                                <p class="text-[10px] text-gray-500">Terisi: <b>${total}</b></p>
+                            </div>
+                        </div>
+                        <i id="i-${contentId}" class="fas fa-chevron-down text-${theme}-400 rotate-icon"></i>
+                    </div>
+                    <div id="${contentId}" class="accordion-content bg-white divide-y divide-gray-50">
+                        ${group.times.map(time => createTimeRow(group, time, validParticipants, theme)).join('')}
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function createTimeRow(group, time, participants, theme) {
+            const schedStr = `${group.days} | ${group.type} | ${time}`;
+            const genderTitle = currentGen.charAt(0).toUpperCase() + currentGen.slice(1);
+            const disableKey = `${currentCat} | ${genderTitle} | ${group.days} | ${group.type} | ${time}`;
+            
+            const slotParticipants = participants.filter(p => p.schedule === schedStr);
+            const count = slotParticipants.length;
+            
+            // LOGIC KAPASITAS DINAMIS
+            const maxCap = CATEGORY_CAPACITY[currentCat] || 10; // Default 10 jika tidak ada di config
+            const percent = Math.min((count/maxCap)*100, 100);
+            const isFull = count >= maxCap;
+            
+            const isRestrictedTime = currentGen === 'akhwat' && group.type === 'Offline' && parseFloat(time.substr(0,5)) >= 17.30;
+            const isDisabledAdmin = DISABLED_SCHEDULES.hasOwnProperty(disableKey);
+            
+            let btnState = `bg-${theme}-600 text-white hover:bg-${theme}-700 shadow-md`;
+            let icon = 'fa-pen';
+            let action = `openReg('${schedStr}')`;
+            let tooltip = 'Daftar';
+
+            if (isDisabledAdmin) {
+                const msg = DISABLED_SCHEDULES[disableKey] || "Mohon maaf, jadwal kelas ini belum dibuka!";
+                btnState = "bg-gray-100 text-gray-400 cursor-not-allowed";
+                icon = "fa-lock";
+                action = `alert('${msg}')`;
+                tooltip = "Terkunci";
+            } else if (isRestrictedTime) {
+                btnState = "bg-gray-100 text-gray-400 cursor-not-allowed";
+                icon = "fa-moon";
+                action = "alert('Maaf, kelas Offline Akhwat ditiadakan malam hari.')";
+                tooltip = "Malam";
+            } else if (isFull) {
+                btnState = "bg-red-100 text-red-400 cursor-not-allowed";
+                icon = "fa-ban";
+                action = "alert('Penuh!')";
+                tooltip = "Penuh";
+            }
+
+            let barColor = `bg-${theme}-500`;
+            if(percent >= 80) barColor = "bg-yellow-500";
+            if(percent >= 100) barColor = "bg-red-500";
+
+            return `
+                <div class="p-4 hover:bg-gray-50 transition flex flex-col gap-2">
+                    <div class="flex justify-between items-end">
+                        <div class="flex-1 mr-4">
+                            <div class="flex justify-between mb-1 text-sm">
+                                <span class="text-gray-700 font-medium"><i class="far fa-clock text-gray-400 mr-1"></i> ${time}</span>
+                                <span class="text-[10px] font-bold ${isFull?'text-red-500':'text-gray-400'}">${count}/${maxCap}</span>
+                            </div>
+                            <div class="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                                <div class="${barColor} h-full rounded-full transition-all duration-700" style="width: ${percent}%"></div>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick='openDetail("${schedStr}", ${JSON.stringify(slotParticipants).replace(/"/g, '&quot;')})' class="w-8 h-8 rounded-lg bg-gray-50 border text-gray-400 hover:text-${theme}-600 transition flex items-center justify-center"><i class="fas fa-eye text-xs"></i></button>
+                            <button onclick="${action}" class="group relative w-8 h-8 rounded-lg ${btnState} transition flex items-center justify-center">
+                                <i class="fas ${icon} text-xs"></i>
+                                <div class="tooltip-text absolute bottom-full mb-2 bg-gray-800 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap">${tooltip}</div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // === MODAL & FORM ===
+        function openReg(sched) {
+            document.getElementById('display-category').innerText = currentCat;
+            document.getElementById('display-schedule').innerText = sched;
+            document.getElementById('reg-category').value = currentCat;
+            document.getElementById('reg-schedule').value = sched;
+            
+            loadAutoSave();
+            document.getElementById('reg-header').classList.remove('hidden');
+            document.getElementById('registration-form').classList.remove('hidden');
+            document.getElementById('success-view').classList.add('hidden');
+            
+            document.getElementById('modal-reg').classList.remove('hidden');
+        }
+
+        function openDetail(title, parts) {
+            const ul = document.getElementById('participant-list');
+            document.getElementById('detail-subtitle').innerText = title;
+            document.getElementById('detail-count').innerText = parts.length;
+
+            ul.innerHTML = parts.length ? parts.map((p,i) => `
+                <li class="flex items-center p-2 bg-gray-50 rounded border border-gray-100 text-xs">
+                    <span class="w-5 h-5 bg-gray-200 rounded-full flex items-center justify-center mr-2 font-bold text-gray-600">${i+1}</span>
+                    <div><div class="font-bold">${p.fullName}</div><div class="text-[10px] text-gray-400">${p.timestamp}</div></div>
+                </li>`).join('') : '<li class="p-4 text-center text-gray-400 italic text-xs">Belum ada peserta</li>';
+            document.getElementById('modal-detail').classList.remove('hidden');
+        }
+
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+        function toggleAcc(id) {
+            const el = document.getElementById(id);
+            const ic = document.getElementById('i-'+id);
+            if(el.classList.contains('open')) { el.classList.remove('open'); el.style.overflow='hidden'; ic.classList.remove('open'); }
+            else { el.classList.add('open'); ic.classList.add('open'); setTimeout(()=>el.style.overflow='visible',300); }
+        }
+
+        // === SUBMIT & FETCH ===
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            const old = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; btn.disabled = true;
+
+            const fd = new FormData(e.target);
+            const params = new URLSearchParams();
+            for(const pair of fd) params.append(pair[0], pair[1]);
+
+            fetch(SCRIPT_URL, { method:'POST', body:params, mode:'no-cors', headers:{'Content-Type':'application/x-www-form-urlencoded'} })
+            .then(() => {
+                clearAutoSave();
+                document.getElementById('registration-form').classList.add('hidden');
+                document.getElementById('reg-header').classList.add('hidden');
+                document.getElementById('success-view').classList.remove('hidden');
+                setTimeout(init, 2000); 
+            })
+            .catch((err) => {
+                console.error(err);
+                alert("Gagal koneksi. Coba lagi.");
+            })
+            .finally(() => { btn.innerHTML = old; btn.disabled = false; });
+        }
+
+        // === UTILS ===
+        function startLoading() {
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('schedule-container').classList.add('hidden');
+            
+            const bar = document.getElementById('loading-bar');
+            const txt = document.getElementById('loading-percentage');
+            let p = 0;
+            
+            window.loadingInterval = setInterval(() => {
+                if(p < 90) { 
+                    p += (p < 30 ? 5 : (p < 70 ? 2 : 0.5));
+                    bar.style.width = Math.min(p, 90) + '%';
+                    if(txt) txt.innerText = Math.floor(p) + '%';
+                }
+            }, 100);
+        }
+
+        function finishLoading() {
+            clearInterval(window.loadingInterval);
+            document.getElementById('loading-bar').style.width = '100%';
+            const txt = document.getElementById('loading-percentage');
+            if(txt) txt.innerText = '100%';
+            
+            setTimeout(() => { 
+                document.getElementById('loading').classList.add('hidden'); 
+                document.getElementById('schedule-container').classList.remove('hidden'); 
+                renderSchedules(); 
+            }, 500);
+        }
+
+        function showErrorBanner() { document.getElementById('error-banner').classList.remove('hidden'); }
+        
+        // Auto Save
+        function initAutoSave() { document.querySelectorAll('#registration-form input, textarea, select').forEach(el => el.addEventListener('input', function(){ if(this.type!=='hidden') localStorage.setItem(STORAGE_KEY_PREFIX+this.name, this.value); })); }
+        function loadAutoSave() { document.querySelectorAll('#registration-form input, textarea, select').forEach(el => { if(this.type!=='hidden') { const v = localStorage.getItem(STORAGE_KEY_PREFIX+el.name); if(v) el.value = v; } }); }
+        function clearAutoSave() { document.querySelectorAll('#registration-form input, textarea, select').forEach(el => { localStorage.removeItem(STORAGE_KEY_PREFIX+el.name); if(this.type!=='hidden') el.value = ''; }); }
+
+        function generateDummyData() { return []; }
+
+        init();
+    </script>
+</body>
+</html>
