@@ -4,22 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pusat Pendaftaran Kelas</title>
-	
-	<!-- META TAGS -->
+    
+    <!-- META TAGS -->
     <meta property="og:title" content="Pusat Pendaftaran Kelas">
     <meta property="og:description" content="Cek jadwal kosong dan daftar sekarang!">
     <meta property="og:image" content="https://lh3.googleusercontent.com/pw/AP1GczO_8zkLOTFbqqUW3g3CPamSxB16VSfHAN1QQmQmhNBlPJn-FBAkjnWFomlh--hEcsyKueowTQShGkCUsPpOs64MhMSlj4dFQzVhcD-PkxECJe0hh3kg01MICSG-Saqa8lWmpndKqPkLiuKOz8NAlveQ=w512-h512-s-no-gm?authuser=0">
     <meta property="og:type" content="website">
 
-    <!-- FAVICON -->
-    <link rel="icon" type="image/png" href="https://lh3.googleusercontent.com/pw/AP1GczPA9jXgztdoCCCKqYeoymeBj8Iu6edy4bCVqWV1bG00BlmrfgPfKi0WcAiLwTfbwiFZT4wzN-Tf6Gwn4pRVsruyyez4zzmV1Cgxe4232rKbxcch1W0mtL_JjFwW38Vfg66YuUdKRz-xuC0XnhCzXBRP=w512-h512-s-no-gm?authuser=0">
-	
+    <!-- TAILWIND & ICONS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
         body { font-family: 'Poppins', sans-serif; }
-        .scroller::-webkit-scrollbar { width: 4px; }
+        .scroller::-webkit-scrollbar { width: 4px; height: 4px; }
         .scroller::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
         .accordion-content { transition: all 0.3s ease-in-out; max-height: 0; opacity: 0; overflow: hidden; }
         .accordion-content.open { max-height: 2000px; opacity: 1; overflow: visible; }
@@ -28,9 +27,14 @@
         .tooltip-text { visibility: hidden; opacity: 0; transition: opacity 0.2s; z-index: 50; }
         .group:hover .tooltip-text { visibility: visible; opacity: 1; }
         
-        /* Animasi Tab */
-        .tab-active { background-color: #059669; color: white; border-color: #059669; }
-        .tab-inactive { background-color: white; color: #4b5563; border-color: #e5e7eb; }
+        /* Animasi Transisi Halaman */
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Custom Toast Notification */
+        #toast-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 100; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+        .toast { background: #333; color: white; padding: 12px 24px; border-radius: 8px; font-size: 14px; opacity: 0; transform: translateY(20px); transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.1); pointer-events: auto; display: flex; items-center; gap: 8px; }
+        .toast.show { opacity: 1; transform: translateY(0); }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen relative pb-20">
@@ -49,71 +53,88 @@
             <h1 class="text-xl md:text-2xl font-bold flex items-center gap-2">
                 <i class="fas fa-mosque"></i> Pusat Pendaftaran Kelas
             </h1>
-            <p class="text-emerald-100 text-xs md:text-sm mt-1">Silahkan pilih kategori kelas, lalu pilih jadwal.</p>
+            <p class="text-emerald-100 text-xs md:text-sm mt-1">Silahkan pilih kategori kelas untuk memulai.</p>
         </div>
     </header>
 
-    <main class="max-w-4xl mx-auto p-4 md:p-6">
+    <main class="max-w-4xl mx-auto p-4 md:p-6 min-h-[60vh] flex flex-col">
         
-        <!-- 1. KATEGORI KELAS (Tab Atas) -->
-        <div class="flex overflow-x-auto pb-4 gap-2 mb-2 scroller">
-            <button onclick="switchCategory('Tahsin')" id="cat-Tahsin" class="cat-btn tab-active px-4 py-2 rounded-full border text-sm font-semibold whitespace-nowrap transition shadow-sm">
-                <i class="fas fa-quran mr-1"></i> Baca Al-Quran
-            </button>
-            <button onclick="switchCategory('Bahasa Arab')" id="cat-Bahasa Arab" class="cat-btn tab-inactive px-4 py-2 rounded-full border text-sm font-semibold whitespace-nowrap transition shadow-sm">
-                <i class="fas fa-language mr-1"></i> Bahasa Arab
-            </button>
-            <button onclick="switchCategory('Fiqih')" id="cat-Fiqih" class="cat-btn tab-inactive px-4 py-2 rounded-full border text-sm font-semibold whitespace-nowrap transition shadow-sm">
-                <i class="fas fa-book-open mr-1"></i> Fiqih
-            </button>
-            <button onclick="switchCategory('Tajwid')" id="cat-Tajwid" class="cat-btn tab-inactive px-4 py-2 rounded-full border text-sm font-semibold whitespace-nowrap transition shadow-sm">
-                <i class="fas fa-book mr-1"></i> Tajwid
-            </button>
-			<button onclick="switchCategory('Tafsir')" id="cat-Tafsir" class="cat-btn tab-inactive px-4 py-2 rounded-full border text-sm font-semibold whitespace-nowrap transition shadow-sm">
-                <i class="fas fa-school mr-1"></i> Tafsir
-            </button>
-        </div>
-
-        <!-- 2. PILIHAN GENDER (Tab Bawah) -->
-        <div class="flex justify-between items-center mb-6 gap-4 bg-white p-2 rounded-xl shadow-sm border border-gray-100">
-            <div class="flex gap-2 w-full">
-                <button onclick="switchGender('ikhwan')" id="btn-ikhwan" class="flex-1 px-4 py-2 rounded-lg font-bold text-sm transition-all bg-emerald-600 text-white shadow">
-                    <i class="fas fa-male mr-2"></i>IKHWAN
-                </button>
-                <button onclick="switchGender('akhwat')" id="btn-akhwat" class="flex-1 px-4 py-2 rounded-lg font-bold text-sm transition-all text-gray-500 hover:bg-gray-50">
-                    <i class="fas fa-female mr-2"></i>AKHWAT
-                </button>
+        <!-- 1. SELECTOR AREA (Selalu Muncul) -->
+        <div class="w-full max-w-xl mx-auto mb-8 transition-all duration-500" id="selector-container">
+            <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-100">
+                <label for="category-select" class="block text-sm font-bold text-gray-600 mb-3 uppercase tracking-wider text-center">
+                    <i class="fas fa-list-ul mr-2 text-emerald-500"></i>Pilih Kelas yang Tersedia
+                </label>
+                
+                <div class="relative group">
+                    <select id="category-select" onchange="handleCategoryChange(this.value)" class="w-full p-4 pl-12 rounded-xl border-2 border-emerald-100 bg-emerald-50/50 shadow-sm appearance-none focus:border-emerald-500 focus:ring-emerald-500 outline-none transition text-gray-700 font-bold text-lg cursor-pointer hover:border-emerald-300">
+                        <option value="">- Ketuk Untuk Memilih -</option>
+                        <!-- Options will be injected by JS -->
+                    </select>
+                    
+                    <!-- Icon Absolute -->
+                    <div class="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-600 transition group-hover:scale-110">
+                        <i class="fas fa-book-open text-xl"></i>
+                    </div>
+                    <div class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Legend -->
-        <div class="flex justify-end gap-3 text-[10px] text-gray-500 mb-4 px-2">
-            <div class="flex items-center gap-1"><span class="w-2 h-2 bg-emerald-500 rounded-full"></span> Tersedia</div>
-            <div class="flex items-center gap-1"><span class="w-2 h-2 bg-yellow-500 rounded-full"></span> Hampir Penuh</div>
-            <div class="flex items-center gap-1"><span class="w-2 h-2 bg-red-500 rounded-full"></span> Penuh</div>
-        </div>
-
-        <!-- Loading -->
-        <div id="loading" class="text-center py-12 flex flex-col items-center justify-center">
-            <i class="fas fa-circle-notch fa-spin text-4xl text-emerald-600 mb-4"></i>
-            <p class="text-sm text-gray-500">Memuat Jadwal...</p>
-            <div class="w-48 h-1.5 bg-gray-200 rounded-full mt-4 overflow-hidden">
-                <div id="loading-bar" class="h-full bg-emerald-500 transition-all duration-300" style="width: 0%"></div>
+        <!-- 2. WELCOME PLACEHOLDER (Muncul saat belum pilih kelas) -->
+        <div id="welcome-state" class="flex-1 flex flex-col items-center justify-center text-center text-gray-400 py-10 fade-in">
+            <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <i class="fas fa-hand-pointer text-4xl text-gray-300 animate-bounce"></i>
             </div>
-            <p id="loading-percentage" class="text-[10px] text-gray-400 mt-2 font-mono">0%</p>
+            <h3 class="text-lg font-semibold text-gray-500">Belum ada kelas dipilih</h3>
+            <p class="text-sm max-w-xs mx-auto mt-2">Silahkan pilih salah satu kategori kelas di menu atas untuk melihat jadwal yang tersedia.</p>
         </div>
 
-        <!-- Container Jadwal -->
-        <div id="schedule-container" class="space-y-4 hidden"></div>
+        <!-- 3. MAIN CONTENT (Muncul setelah pilih kelas) -->
+        <div id="main-content" class="hidden fade-in">
+            
+            <!-- Filter Gender -->
+            <div class="flex justify-between items-center mb-6 gap-4 bg-white p-2 rounded-xl shadow-sm border border-gray-100">
+                <div class="flex gap-2 w-full">
+                    <button onclick="switchGender('ikhwan')" id="btn-ikhwan" class="flex-1 px-4 py-2 rounded-lg font-bold text-sm transition-all bg-emerald-600 text-white shadow">
+                        <i class="fas fa-male mr-2"></i>IKHWAN
+                    </button>
+                    <button onclick="switchGender('akhwat')" id="btn-akhwat" class="flex-1 px-4 py-2 rounded-lg font-bold text-sm transition-all text-gray-500 hover:bg-gray-50">
+                        <i class="fas fa-female mr-2"></i>AKHWAT
+                    </button>
+                </div>
+            </div>
+
+            <!-- Legend -->
+            <div class="flex justify-end gap-3 text-[10px] text-gray-500 mb-4 px-2">
+                <div class="flex items-center gap-1"><span class="w-2 h-2 bg-emerald-500 rounded-full"></span> Tersedia</div>
+                <div class="flex items-center gap-1"><span class="w-2 h-2 bg-yellow-500 rounded-full"></span> Hampir Penuh</div>
+                <div class="flex items-center gap-1"><span class="w-2 h-2 bg-red-500 rounded-full"></span> Penuh</div>
+            </div>
+
+            <!-- Loading -->
+            <div id="loading" class="text-center py-12 flex flex-col items-center justify-center">
+                <i class="fas fa-circle-notch fa-spin text-4xl text-emerald-600 mb-4"></i>
+                <p class="text-sm text-gray-500">Sedang mengecek kuota...</p>
+                <div class="w-48 h-1.5 bg-gray-200 rounded-full mt-4 overflow-hidden">
+                    <div id="loading-bar" class="h-full bg-emerald-500 transition-all duration-300" style="width: 0%"></div>
+                </div>
+                <p id="loading-percentage" class="text-[10px] text-gray-400 mt-2 font-mono">0%</p>
+            </div>
+
+            <!-- Container Jadwal -->
+            <div id="schedule-container" class="space-y-4 hidden"></div>
+
+        </div>
 
     </main>
 
-    <!-- MODAL FORM REGISTRASI -->
+    <!-- MODAL FORM REGISTRASI (Sama seperti sebelumnya) -->
     <div id="modal-reg" class="fixed inset-0 bg-emerald-900/60 z-50 hidden flex items-end md:items-center justify-center p-0 md:p-4 backdrop-blur-sm" onclick="closeModal('modal-reg')">
-        <!-- PERBAIKAN: Menggunakan h-[90vh] (Fixed Height) agar memaksa modal naik ke atas (jarak tipis) di mobile -->
         <div class="bg-white rounded-t-2xl md:rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col h-[90vh] md:h-auto md:max-h-[90vh] relative" onclick="event.stopPropagation()">
             
-            <!-- Header -->
             <div id="reg-header" class="bg-emerald-600 p-4 text-white flex justify-between items-center shrink-0">
                 <div>
                     <h3 class="font-bold text-lg"><i class="fas fa-edit mr-2"></i>Formulir Pendaftaran</h3>
@@ -123,7 +144,6 @@
             </div>
 
             <div class="p-5 overflow-y-auto scroller flex-1 relative">
-                <!-- FORM -->
                 <form id="registration-form" class="space-y-4" onsubmit="handleFormSubmit(event)">
                     
                     <div class="bg-emerald-50 border border-emerald-100 p-3 rounded-lg text-xs space-y-1">
@@ -168,7 +188,6 @@
                     </button>
                 </form>
 
-                <!-- SUCCESS SCREEN (WhatsApp Link) -->
                 <div id="success-view" class="hidden bg-white z-50 flex flex-col items-center justify-center text-center p-8 w-full min-h-[400px]">
                     <div class="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mb-6 animate-bounce"><i class="fas fa-check text-4xl text-emerald-600"></i></div>
                     <h2 class="text-2xl font-bold text-gray-800 mb-2">Alhamdulillah!</h2>
@@ -188,8 +207,6 @@
     <!-- MODAL DETAIL PESERTA -->
     <div id="modal-detail" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm" onclick="closeModal('modal-detail')">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all scale-100" onclick="event.stopPropagation()">
-            
-            <!-- Header Detail -->
             <div class="bg-gray-800 p-4 text-white flex justify-between items-start">
                 <div>
                     <h3 class="font-bold text-lg"><i class="fas fa-users mr-2"></i>Daftar Peserta</h3>
@@ -197,80 +214,98 @@
                 </div>
                 <button onclick="closeModal('modal-detail')" class="hover:bg-gray-700 w-8 h-8 rounded-full flex items-center justify-center transition"><i class="fas fa-times"></i></button>
             </div>
-
-            <!-- Baris Jumlah Peserta -->
             <div class="p-3 bg-gray-50 border-b flex justify-between items-center text-xs font-bold text-gray-600 tracking-wide">
                 <span>JUMLAH PESERTA TERDAFTAR</span>
                 <span id="detail-count" class="bg-gray-200 text-gray-800 px-3 py-1 rounded-full text-xs">0</span>
             </div>
-
             <ul id="participant-list" class="max-h-[50vh] overflow-y-auto scroller p-2 space-y-1"></ul>
         </div>
     </div>
 
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
     <script>
+        // === TOAST SYSTEM ===
+        function showToast(message, isError = false) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            if (isError) toast.style.borderLeft = '4px solid #ef4444';
+            else toast.style.borderLeft = '4px solid #10b981';
+            toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-circle text-red-400' : 'fa-info-circle text-emerald-400'}"></i><span>${message}</span>`;
+            container.appendChild(toast);
+            void toast.offsetWidth;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
         // === KONFIGURASI ===
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz3Urh7RszE6LGDEFKJm7gS3kShJw_Ir6xruJNUos9uUlUPphHz2qnME4dxOcPfvmjw/exec"; 
         const MAX_CAPACITY = 10; 
         const STORAGE_KEY_PREFIX = "tahsin_app_";
 
-        // === KONFIGURASI KAPASITAS PER KELAS ===
+        // === KONFIGURASI KAPASITAS & LIST KATEGORI ===
+        // Note: Dropdown akan dibuat otomatis berdasarkan Key object ini
         const CATEGORY_CAPACITY = {
-            "Tahsin": 10,
+            "Baca Al-Quran": 10,
             "Bahasa Arab": 25,
             "Fiqih": 25,
-			"Tafsir": 20,
-            "Tajwid": 15
+            "Tafsir": 20,
+            "Tajwid": 15,
+            "Hadits Arba'in": 20 // Contoh jika nambah kelas baru
         };
 
-        // === FITUR DISABLE KATEGORI KELAS (Tab dikunci) ===
         const DISABLED_CATEGORIES = {
             "Bahasa Arab": "Mohon maaf, pendaftaran kelas Bahasa Arab belum dibuka untuk saat ini.",
             "Fiqih": "Mohon maaf, kelas Fiqih sedang dalam persiapan kurikulum baru.",
-			"Tafsir": "Mohon maaf, Kelas tafsir juz 30 belum dibuka.",
-            "Tajwid": "Kelas Tajwid akan dibuka bulan depan. Stay tuned!"
+            "Tafsir": "Mohon maaf, Kelas tafsir juz 30 belum dibuka.",
+            "Tajwid": "Kelas Tajwid akan dibuka bulan depan. Stay tuned!",
+            "Hadits Arba'in": "Kelas baru segera hadir!"
         };
 
-        // === FITUR DISABLE JADWAL SPESIFIK ===
         const DISABLED_SCHEDULES = {
             "Bahasa Arab | Ikhwan | Selasa | Offline | 08.00 – 09.30": "Ustadz sedang berhalangan hadir bulan ini.",
             "Fiqih | Akhwat | Ahad | Offline | 13.00 – 14.30": "Kuota dikunci sementara untuk evaluasi."
         };
 
-        // === DATA MASTER JADWAL ===
+        // Data Master (Untuk Simulasi/Fallback)
         const MASTER_DATA = [
-            { category: "Tahsin", days: "Senin & Rabu", type: "Online", times: ["06.30 – 08.00", "16.00 – 17.30", "19.30 – 20.30"] },
-            { category: "Tahsin", days: "Senin & Rabu", type: "Offline", times: ["06.30 – 08.00", "16.00 – 17.30"] },
-            { category: "Tahsin", days: "Selasa & Kamis", type: "Online", times: ["06.30 – 08.00", "19.30 – 20.30"] },
-            { category: "Tahsin", days: "Selasa & Kamis", type: "Offline", times: ["06.30 – 08.00", "16.00 – 17.30"] },
-			{ category: "Tahsin", days: "Sabtu & Ahad", type: "Online", times: ["06.30 – 08.00", "08.00 – 09.30", "16.00 – 17.30"] },
-			{ category: "Tahsin", days: "Sabtu & Ahad", type: "Offline", times: ["06.30 – 08.00", "08.00 – 09.30", "16.00 – 17.30"] },
+            { category: "Baca Al-Quran", days: "Senin & Rabu", type: "Online", times: ["06.30 – 08.00", "16.00 – 17.30", "19.30 – 20.30"] },
+            { category: "Baca Al-Quran", days: "Senin & Rabu", type: "Offline", times: ["06.30 – 08.00", "16.00 – 17.30"] },
+            { category: "Baca Al-Quran", days: "Selasa & Kamis", type: "Online", times: ["06.30 – 08.00", "08.00 – 09.30", "19.00 – 20.30"] },
+            { category: "Baca Al-Quran", days: "Selasa & Kamis", type: "Offline", times: ["06.30 – 08.00", "16.00 – 17.30", "19.00 – 20.30"] },
+            { category: "Baca Al-Quran", days: "Sabtu & Ahad", type: "Online", times: ["06.30 – 08.00", "08.00 – 09.30", "16.00 – 17.30"] },
+            { category: "Baca Al-Quran", days: "Sabtu & Ahad", type: "Offline", times: ["06.30 – 08.00", "08.00 – 09.30", "16.00 – 17.30"] },
             { category: "Bahasa Arab", days: "Selasa", type: "Offline", times: ["08.00 – 09.30", "13.00 – 14.30"] },
             { category: "Bahasa Arab", days: "Kamis", type: "Online", times: ["19.30 – 21.00"] },
-			{ category: "Bahasa Arab", days: "Sabtu", type: "Offline", times: ["09.30 – 11.00"] },
+            { category: "Bahasa Arab", days: "Sabtu", type: "Offline", times: ["09.30 – 11.00"] },
             { category: "Fiqih", days: "Sabtu", type: "Offline", times: ["09.00 – 11.00"] },
             { category: "Fiqih", days: "Ahad", type: "Offline", times: ["13.00 – 14.30"] },
             { category: "Tajwid", days: "Jumat", type: "Online", times: ["16.00 – 17.30"] },
             { category: "Tajwid", days: "Ahad", type: "Offline", times: ["08.00 – 09.30"] },
-			{ category: "Tafsir", days: "Sabtu", type: "Online", times: ["08.00 – 09.30"] },
-			{ category: "Tafsir", days: "Ahad", type: "Online", times: ["08.00 – 09.30", "09.30 – 11.00", "13.00 – 14.30"] },
-			{ category: "Tafsir", days: "Ahad", type: "Offline", times: ["08.00 – 09.30"] }
+            { category: "Tafsir", days: "Sabtu", type: "Online", times: ["08.00 – 09.30"] },
+            { category: "Tafsir", days: "Ahad", type: "Online", times: ["08.00 – 09.30", "09.30 – 11.00", "13.00 – 14.30"] },
+            { category: "Tafsir", days: "Ahad", type: "Offline", times: ["08.00 – 09.30"] }
         ];
 
         // State
         let allParticipants = [];
-        let currentCat = 'Tahsin';
+        let currentCat = ''; // Start empty
         let currentGen = 'ikhwan';
 
         // === INIT ===
         async function init() {
-            startLoading();
+            initDropdown(); // Generate options automatically
             initAutoSave();
             
+            // Kita load data di background, tidak memblokir UI dropdown
             if (!SCRIPT_URL) {
                 showErrorBanner();
-                allParticipants = generateDummyData();
-                finishLoading();
+                allParticipants = [];
                 return;
             }
 
@@ -292,22 +327,43 @@
                 });
             } catch (e) {
                 showErrorBanner();
-                allParticipants = generateDummyData();
+                allParticipants = [];
             }
-            finishLoading();
         }
 
-        // === LOGIC TAMPILAN ===
-        function switchCategory(cat) {
-            currentCat = cat;
-            document.querySelectorAll('.cat-btn').forEach(b => {
-                b.classList.remove('tab-active');
-                b.classList.add('tab-inactive');
+        // === NEW: POPULATE DROPDOWN DINAMIS ===
+        function initDropdown() {
+            const select = document.getElementById('category-select');
+            // Ambil semua kategori dari konfigurasi
+            const categories = Object.keys(CATEGORY_CAPACITY);
+            
+            categories.forEach(cat => {
+                const opt = document.createElement('option');
+                opt.value = cat;
+                opt.textContent = cat;
+                select.appendChild(opt);
             });
-            const activeBtn = document.getElementById(`cat-${cat}`);
-            activeBtn.classList.remove('tab-inactive');
-            activeBtn.classList.add('tab-active');
-            renderSchedules();
+        }
+
+        // === NEW: HANDLE SELECTION ===
+        function handleCategoryChange(val) {
+            const welcomeState = document.getElementById('welcome-state');
+            const mainContent = document.getElementById('main-content');
+            
+            if (!val) {
+                // Jika pilih "Pilih Kategori" (Kosong)
+                currentCat = '';
+                welcomeState.classList.remove('hidden');
+                mainContent.classList.add('hidden');
+            } else {
+                // Jika pilih Kategori Valid
+                currentCat = val;
+                welcomeState.classList.add('hidden');
+                mainContent.classList.remove('hidden');
+                
+                // Trigger animasi loading sebentar untuk efek "Fetch"
+                startLoadingUI();
+            }
         }
 
         function switchGender(gen) {
@@ -325,6 +381,30 @@
             renderSchedules();
         }
 
+        // UI Only Loading (Karena data sudah di fetch di awal, ini hanya UX)
+        function startLoadingUI() {
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('schedule-container').classList.add('hidden');
+            
+            const bar = document.getElementById('loading-bar');
+            const txt = document.getElementById('loading-percentage');
+            let p = 0;
+            
+            // Percepat loading karena ini SPA
+            const interval = setInterval(() => {
+                if(p < 100) { 
+                    p += 10;
+                    bar.style.width = p + '%';
+                    if(txt) txt.innerText = p + '%';
+                } else {
+                    clearInterval(interval);
+                    document.getElementById('loading').classList.add('hidden');
+                    document.getElementById('schedule-container').classList.remove('hidden');
+                    renderSchedules();
+                }
+            }, 50); // Sangat cepat (50ms)
+        }
+
         function renderSchedules() {
             const container = document.getElementById('schedule-container');
             container.innerHTML = '';
@@ -333,7 +413,7 @@
             if (DISABLED_CATEGORIES[currentCat]) {
                 const msg = DISABLED_CATEGORIES[currentCat];
                 container.innerHTML = `
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-10 text-center flex flex-col items-center">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-10 text-center flex flex-col items-center fade-in">
                         <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4 text-gray-400">
                             <i class="fas fa-lock text-4xl"></i>
                         </div>
@@ -353,7 +433,7 @@
             );
 
             if (filteredSchedules.length === 0) {
-                container.innerHTML = `<div class="text-center text-gray-400 py-10 italic">Tidak ada jadwal untuk kategori ini.</div>`;
+                container.innerHTML = `<div class="text-center text-gray-400 py-10 italic">Tidak ada jadwal terdaftar untuk kategori ini.</div>`;
                 return;
             }
 
@@ -366,7 +446,7 @@
                 });
 
                 const div = document.createElement('div');
-                div.className = "bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden";
+                div.className = "bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden fade-in";
                 
                 div.innerHTML = `
                     <div onclick="toggleAcc('${contentId}')" class="bg-${theme}-50 px-5 py-3 border-b border-${theme}-100 flex items-center justify-between cursor-pointer hover:bg-${theme}-100 transition">
@@ -395,8 +475,7 @@
             const slotParticipants = participants.filter(p => p.schedule === schedStr);
             const count = slotParticipants.length;
             
-            // LOGIC KAPASITAS DINAMIS
-            const maxCap = CATEGORY_CAPACITY[currentCat] || 10; // Default 10 jika tidak ada di config
+            const maxCap = CATEGORY_CAPACITY[currentCat] || 10; 
             const percent = Math.min((count/maxCap)*100, 100);
             const isFull = count >= maxCap;
             
@@ -412,23 +491,25 @@
                 const msg = DISABLED_SCHEDULES[disableKey] || "Mohon maaf, jadwal kelas ini belum dibuka!";
                 btnState = "bg-gray-100 text-gray-400 cursor-not-allowed";
                 icon = "fa-lock";
-                action = `alert('${msg}')`;
+                action = `showToast('${msg}', true)`;
                 tooltip = "Terkunci";
             } else if (isRestrictedTime) {
                 btnState = "bg-gray-100 text-gray-400 cursor-not-allowed";
                 icon = "fa-moon";
-                action = "alert('Maaf, kelas Offline Akhwat ditiadakan malam hari.')";
+                action = "showToast('Maaf, kelas Offline Akhwat ditiadakan malam hari.', true)";
                 tooltip = "Malam";
             } else if (isFull) {
                 btnState = "bg-red-100 text-red-400 cursor-not-allowed";
                 icon = "fa-ban";
-                action = "alert('Penuh!')";
+                action = "showToast('Kelas ini sudah penuh!', true)";
                 tooltip = "Penuh";
             }
 
             let barColor = `bg-${theme}-500`;
             if(percent >= 80) barColor = "bg-yellow-500";
             if(percent >= 100) barColor = "bg-red-500";
+
+            const safeParticipants = JSON.stringify(slotParticipants).replace(/"/g, '&quot;');
 
             return `
                 <div class="p-4 hover:bg-gray-50 transition flex flex-col gap-2">
@@ -443,7 +524,7 @@
                             </div>
                         </div>
                         <div class="flex gap-2">
-                            <button onclick='openDetail("${schedStr}", ${JSON.stringify(slotParticipants).replace(/"/g, '&quot;')})' class="w-8 h-8 rounded-lg bg-gray-50 border text-gray-400 hover:text-${theme}-600 transition flex items-center justify-center"><i class="fas fa-eye text-xs"></i></button>
+                            <button onclick='openDetail("${schedStr}", ${safeParticipants})' class="w-8 h-8 rounded-lg bg-gray-50 border text-gray-400 hover:text-${theme}-600 transition flex items-center justify-center"><i class="fas fa-eye text-xs"></i></button>
                             <button onclick="${action}" class="group relative w-8 h-8 rounded-lg ${btnState} transition flex items-center justify-center">
                                 <i class="fas ${icon} text-xs"></i>
                                 <div class="tooltip-text absolute bottom-full mb-2 bg-gray-800 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap">${tooltip}</div>
@@ -454,18 +535,16 @@
             `;
         }
 
-        // === MODAL & FORM ===
+        // === MODAL & FORM & OTHER UTILS (Keep Previous Logic) ===
         function openReg(sched) {
             document.getElementById('display-category').innerText = currentCat;
             document.getElementById('display-schedule').innerText = sched;
             document.getElementById('reg-category').value = currentCat;
             document.getElementById('reg-schedule').value = sched;
-            
             loadAutoSave();
             document.getElementById('reg-header').classList.remove('hidden');
             document.getElementById('registration-form').classList.remove('hidden');
             document.getElementById('success-view').classList.add('hidden');
-            
             document.getElementById('modal-reg').classList.remove('hidden');
         }
 
@@ -473,7 +552,6 @@
             const ul = document.getElementById('participant-list');
             document.getElementById('detail-subtitle').innerText = title;
             document.getElementById('detail-count').innerText = parts.length;
-
             ul.innerHTML = parts.length ? parts.map((p,i) => `
                 <li class="flex items-center p-2 bg-gray-50 rounded border border-gray-100 text-xs">
                     <span class="w-5 h-5 bg-gray-200 rounded-full flex items-center justify-center mr-2 font-bold text-gray-600">${i+1}</span>
@@ -490,71 +568,36 @@
             else { el.classList.add('open'); ic.classList.add('open'); setTimeout(()=>el.style.overflow='visible',300); }
         }
 
-        // === SUBMIT & FETCH ===
         function handleFormSubmit(e) {
             e.preventDefault();
             const btn = e.target.querySelector('button');
             const old = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; btn.disabled = true;
-
             const fd = new FormData(e.target);
             const params = new URLSearchParams();
             for(const pair of fd) params.append(pair[0], pair[1]);
-
             fetch(SCRIPT_URL, { method:'POST', body:params, mode:'no-cors', headers:{'Content-Type':'application/x-www-form-urlencoded'} })
             .then(() => {
                 clearAutoSave();
                 document.getElementById('registration-form').classList.add('hidden');
                 document.getElementById('reg-header').classList.add('hidden');
                 document.getElementById('success-view').classList.remove('hidden');
-                setTimeout(init, 2000); 
+                setTimeout(() => {
+                    // Refresh data in background
+                    init().then(() => renderSchedules());
+                }, 2000); 
             })
             .catch((err) => {
                 console.error(err);
-                alert("Gagal koneksi. Coba lagi.");
+                showToast("Gagal koneksi. Coba lagi.", true);
             })
             .finally(() => { btn.innerHTML = old; btn.disabled = false; });
         }
 
-        // === UTILS ===
-        function startLoading() {
-            document.getElementById('loading').classList.remove('hidden');
-            document.getElementById('schedule-container').classList.add('hidden');
-            
-            const bar = document.getElementById('loading-bar');
-            const txt = document.getElementById('loading-percentage');
-            let p = 0;
-            
-            window.loadingInterval = setInterval(() => {
-                if(p < 90) { 
-                    p += (p < 30 ? 5 : (p < 70 ? 2 : 0.5));
-                    bar.style.width = Math.min(p, 90) + '%';
-                    if(txt) txt.innerText = Math.floor(p) + '%';
-                }
-            }, 100);
-        }
-
-        function finishLoading() {
-            clearInterval(window.loadingInterval);
-            document.getElementById('loading-bar').style.width = '100%';
-            const txt = document.getElementById('loading-percentage');
-            if(txt) txt.innerText = '100%';
-            
-            setTimeout(() => { 
-                document.getElementById('loading').classList.add('hidden'); 
-                document.getElementById('schedule-container').classList.remove('hidden'); 
-                renderSchedules(); 
-            }, 500);
-        }
-
         function showErrorBanner() { document.getElementById('error-banner').classList.remove('hidden'); }
-        
-        // Auto Save
         function initAutoSave() { document.querySelectorAll('#registration-form input, textarea, select').forEach(el => el.addEventListener('input', function(){ if(this.type!=='hidden') localStorage.setItem(STORAGE_KEY_PREFIX+this.name, this.value); })); }
         function loadAutoSave() { document.querySelectorAll('#registration-form input, textarea, select').forEach(el => { if(this.type!=='hidden') { const v = localStorage.getItem(STORAGE_KEY_PREFIX+el.name); if(v) el.value = v; } }); }
         function clearAutoSave() { document.querySelectorAll('#registration-form input, textarea, select').forEach(el => { localStorage.removeItem(STORAGE_KEY_PREFIX+el.name); if(this.type!=='hidden') el.value = ''; }); }
-
-        function generateDummyData() { return []; }
 
         init();
     </script>
