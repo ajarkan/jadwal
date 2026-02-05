@@ -130,7 +130,7 @@
 
     </main>
 
-    <!-- MODAL FORM REGISTRASI -->
+    <!-- MODAL FORM REGISTRASI (Sama seperti sebelumnya) -->
     <div id="modal-reg" class="fixed inset-0 bg-emerald-900/60 z-50 hidden flex items-end md:items-center justify-center p-0 md:p-4 backdrop-blur-sm" onclick="closeModal('modal-reg')">
         <div class="bg-white rounded-t-2xl md:rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col h-[90vh] md:h-auto md:max-h-[90vh] relative" onclick="event.stopPropagation()">
             
@@ -145,7 +145,7 @@
             <div class="p-5 overflow-y-auto scroller flex-1 relative">
                 <form id="registration-form" class="space-y-4" onsubmit="handleFormSubmit(event)">
                     
-                    <div class="bg-emerald-5 border border-emerald-100 p-3 rounded-lg text-xs space-y-1">
+                    <div class="bg-emerald-50 border border-emerald-100 p-3 rounded-lg text-xs space-y-1">
                         <div class="flex justify-between">
                             <span class="text-gray-500">KELAS:</span>
                             <span class="font-bold text-emerald-700" id="display-category"></span>
@@ -249,13 +249,14 @@
         const STORAGE_KEY_PREFIX = "tahsin_app_";
 
         // === KONFIGURASI KAPASITAS & LIST KATEGORI ===
+        // Note: Dropdown akan dibuat otomatis berdasarkan Key object ini
         const CATEGORY_CAPACITY = {
             "Baca Al-Quran": 10,
             "Bahasa Arab": 25,
             "Fiqih": 25,
             "Tafsir": 20,
             "Tajwid": 15,
-            "Hadits Arba'in": 20
+            "Hadits Arba'in": 20 // Contoh jika nambah kelas baru
         };
 
         const DISABLED_CATEGORIES = {
@@ -349,11 +350,7 @@
         function handleCategoryChange(val) {
             const welcomeState = document.getElementById('welcome-state');
             const mainContent = document.getElementById('main-content');
-            const select = document.getElementById('category-select');
             
-            // Update select value if called externally
-            if(select.value !== val) select.value = val;
-
             if (!val) {
                 // Jika pilih "Pilih Kategori" (Kosong)
                 currentCat = '';
@@ -539,7 +536,7 @@
             `;
         }
 
-        // === MODAL & FORM & OTHER UTILS ===
+        // === MODAL & FORM & OTHER UTILS (Keep Previous Logic) ===
         function openReg(sched) {
             document.getElementById('display-category').innerText = currentCat;
             document.getElementById('display-schedule').innerText = sched;
@@ -612,11 +609,10 @@
             // 1. Ambil parameter dari URL browser
             const queryString = window.location.search;
             const urlParams = new URLSearchParams(queryString);
-            const kategori = urlParams.get('kategori'); // Menangkap nilai 'Tajwid' e.g. ?kategori=Tajwid
+            const kategori = urlParams.get('kategori'); // Menangkap nilai 'Tajwid'
 
             // 2. Jika ada parameter kategori
             if (kategori) {
-                // CORRECTION: ID yang benar adalah category-select
                 const selectElement = document.getElementById('category-select');
                 
                 // Cek apakah opsi tersebut ada di dropdown (untuk mencegah error)
@@ -627,8 +623,10 @@
                     // 3. Set nilai dropdown sesuai parameter
                     selectElement.value = kategori;
 
-                    // 4. Trigger fungsi handleCategoryChange (CORRECTION: nama fungsi yang benar)
-                    handleCategoryChange(kategori);
+                    // 4. Trigger fungsi updateScheduleOptions agar logika jadwal berjalan
+                    // Catatan: Jadwal mungkin belum muncul jika user belum pilih Gender, 
+                    // tapi dropdown kelas sudah akan terpilih otomatis.
+                    updateScheduleOptions();
                 }
             }
         });
