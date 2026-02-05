@@ -8,7 +8,6 @@
     <!-- META TAGS -->
     <meta property="og:title" content="Pusat Pendaftaran Kelas">
     <meta property="og:description" content="Cek jadwal kosong dan daftar sekarang!">
-    <meta property="og:image" content="https://lh3.googleusercontent.com/pw/AP1GczO_8zkLOTFbqqUW3g3CPamSxB16VSfHAN1QQmQmhNBlPJn-FBAkjnWFomlh--hEcsyKueowTQShGkCUsPpOs64MhMSlj4dFQzVhcD-PkxECJe0hh3kg01MICSG-Saqa8lWmpndKqPkLiuKOz8NAlveQ=w512-h512-s-no-gm?authuser=0">
     <meta property="og:type" content="website">
 
     <!-- TAILWIND & ICONS -->
@@ -68,7 +67,7 @@
                 
                 <div class="relative group">
                     <select id="category-select" onchange="handleCategoryChange(this.value)" class="w-full p-4 pl-12 rounded-xl border-2 border-emerald-100 bg-emerald-50/50 shadow-sm appearance-none focus:border-emerald-500 focus:ring-emerald-500 outline-none transition text-gray-700 font-bold text-lg cursor-pointer hover:border-emerald-300">
-                        <option value="">- Ketuk Untuk Memilih -</option>
+                        <option value="">-- Ketuk Disini Untuk Memilih --</option>
                         <!-- Options will be injected by JS -->
                     </select>
                     
@@ -244,6 +243,7 @@
         }
 
         // === KONFIGURASI ===
+        // URL Script Google yang Anda berikan
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz3Urh7RszE6LGDEFKJm7gS3kShJw_Ir6xruJNUos9uUlUPphHz2qnME4dxOcPfvmjw/exec"; 
         const MAX_CAPACITY = 10; 
         const STORAGE_KEY_PREFIX = "tahsin_app_";
@@ -276,8 +276,8 @@
         const MASTER_DATA = [
             { category: "Baca Al-Quran", days: "Senin & Rabu", type: "Online", times: ["06.30 – 08.00", "16.00 – 17.30", "19.30 – 20.30"] },
             { category: "Baca Al-Quran", days: "Senin & Rabu", type: "Offline", times: ["06.30 – 08.00", "16.00 – 17.30"] },
-            { category: "Baca Al-Quran", days: "Selasa & Kamis", type: "Online", times: ["06.30 – 08.00", "08.00 – 09.30", "19.00 – 20.30"] },
-            { category: "Baca Al-Quran", days: "Selasa & Kamis", type: "Offline", times: ["06.30 – 08.00", "16.00 – 17.30", "19.00 – 20.30"] },
+            { category: "Baca Al-Quran", days: "Selasa & Kamis", type: "Online", times: ["06.30 – 08.00", "19.30 – 20.30"] },
+            { category: "Baca Al-Quran", days: "Selasa & Kamis", type: "Offline", times: ["06.30 – 08.00", "16.00 – 17.30"] },
             { category: "Baca Al-Quran", days: "Sabtu & Ahad", type: "Online", times: ["06.30 – 08.00", "08.00 – 09.30", "16.00 – 17.30"] },
             { category: "Baca Al-Quran", days: "Sabtu & Ahad", type: "Offline", times: ["06.30 – 08.00", "08.00 – 09.30", "16.00 – 17.30"] },
             { category: "Bahasa Arab", days: "Selasa", type: "Offline", times: ["08.00 – 09.30", "13.00 – 14.30"] },
@@ -326,6 +326,7 @@
                     return { ...p, timestamp: ft };
                 });
             } catch (e) {
+                console.error("Gagal mengambil data dari Google Script:", e);
                 showErrorBanner();
                 allParticipants = [];
             }
